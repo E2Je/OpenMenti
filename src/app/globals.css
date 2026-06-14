@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+/*
+  OpenMenti design system.
+  Tailwind v4: tokens are declared in @theme and consumed via utilities
+  (bg-surface, text-ink, etc). Logical utilities (ps-/pe-/ms-/me-/start-/end-)
+  are RTL-aware out of the box, so dir="rtl" on <html> flips layout correctly.
+*/
+
+:root {
+  --background: #f5f6fb;
+  --surface: #ffffff;
+  --surface-2: #f0f2f9;
+  --ink: #14162b;
+  --ink-soft: #565a78;
+  --ink-faint: #9095b4;
+  --brand: #5b4bff;
+  --brand-strong: #4334e0;
+  --brand-soft: #eceaff;
+  --accent: #ff5b8a;
+  --success: #1bbf83;
+  --warning: #ffb020;
+  --danger: #f0433a;
+  --border: #e4e7f2;
+  --ring: #5b4bff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-border: var(--border);
+
+  --font-sans: var(--font-heebo), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 1rem;
+  --radius-pill: 999px;
+
+  --shadow-soft: 0 1px 2px rgba(20, 22, 43, 0.04), 0 8px 24px rgba(20, 22, 43, 0.06);
+  --shadow-lift: 0 12px 40px rgba(20, 22, 43, 0.12);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Hide scrollbars on the presenter fullscreen surfaces while keeping scroll. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth focus-mode / modal entrance used across slide views. */
+@keyframes om-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes om-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.om-pop-in {
+  animation: om-pop-in 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.om-fade-in {
+  animation: om-fade-in 0.2s ease-out;
+}
+
+/* Live bar growth used by Multiple Choice / Ranking results. */
+.om-bar {
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
