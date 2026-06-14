@@ -55,8 +55,7 @@ export function Presenter({
     );
   }
 
-  const isVisual =
-    activeSlide.type === "multiple_choice" || activeSlide.type === "word_cloud";
+  const canExport = activeSlide.type !== "instructions";
 
   return (
     <main className="flex h-screen flex-col bg-background">
@@ -72,7 +71,7 @@ export function Presenter({
           <span className="text-sm text-ink-soft">
             👥 {participantHint} השתתפו בשקופית
           </span>
-          {isVisual && (
+          {canExport && (
             <Button size="sm" variant="outline" onClick={handleExport} disabled={exporting}>
               {exporting ? "מייצא..." : "ייצוא PDF"}
             </Button>
@@ -84,7 +83,7 @@ export function Presenter({
       </header>
 
       {/* slide stage */}
-      <div className="relative flex-1 overflow-hidden">
+      <div id="om-capture" className="relative flex-1 overflow-hidden">
         <PresenterSlide
           slide={activeSlide}
           payload={payload}

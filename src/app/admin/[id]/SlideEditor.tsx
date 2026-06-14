@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition, useRef } from "react";
+import { useState, useTransition, useRef, useCallback } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui";
 import { cn, joinUrl, formatRoomCode } from "@/lib/utils";
@@ -367,9 +367,22 @@ function PreviewBody({
 
   if (slide.type === "text") {
     const c = slide.content_json as { markdown: string };
+    const lines = (c.markdown || "").split("\n");
     return (
-      <div className="h-full overflow-auto whitespace-pre-wrap text-right text-lg text-ink">
-        {c.markdown}
+      <div className="h-full overflow-auto space-y-2 text-right text-ink">
+        {lines.map((line, i) => {
+          if (line.startsWith("# ")) return <p key={i} className="text-3xl font-black">{line.slice(2)}</p>;
+          if (line.startsWith("## ")) return <p key={i} className="text-2xl font-bold">{line.slice(3)}</p>;
+          if (line.startsWith("### ")) return <p key={i} className="text-xl font-semibold">{line.slice(4)}</p>;
+          const bullet = line.trimStart().startsWith("- ");
+          if (!line.trim()) return <br key={i} />;
+          return (
+            <p key={i} className={`text-base${bullet ? " flex gap-2" : ""}`}>
+              {bullet && <span className="text-brand">•</span>}
+              <span>{bullet ? line.trimStart().slice(2) : line}</span>
+            </p>
+          );
+        })}
       </div>
     );
   }
@@ -485,11 +498,10 @@ function EditPanel({
       )}
 
       {slide.type === "text" && (
-        <Labeled label="תוכן (Markdown)">
-          <textarea
-            className="min-h-48 w-full rounded-lg border border-border bg-surface p-3 outline-none focus:border-brand"
+        <Labeled label="תוכן">
+          <TextEditor
             value={(slide.content_json as { markdown: string }).markdown}
-            onChange={(e) => setContent({ markdown: e.target.value })}
+            onChange={(v) => setContent({ markdown: v })}
           />
         </Labeled>
       )}
@@ -795,6 +807,99 @@ function RankingFields({
         )}
       </div>
     </Labeled>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Text editor with formatting toolbar
+// ---------------------------------------------------------------------------
+function TextEditor({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  const wrap = useCallback(
+    (before: string, after = before) => {
+      const el = ref.current;
+      if (!el) return;
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      const selected = value.slice(start, end);
+      const next =
+        value.slice(0, start) + before + selected + after + value.slice(end);
+      onChange(next);
+      setTimeout(() => {
+        el.focus();
+        el.setSelectionRange(
+          start + before.length,
+          start + before.length + selected.length
+        );
+      }, 0);
+    },
+    [value, onChange]
+  );
+
+  const prefix = useCallback(
+    (p: string) => {
+      const el = ref.current;
+      if (!el) return;
+      const pos = el.selectionStart;
+      const lineStart = value.lastIndexOf("\n", pos - 1) + 1;
+      const line = value.slice(lineStart);
+      // Toggle: if line already starts with prefix, remove it
+      const next = line.startsWith(p)
+        ? value.slice(0, lineStart) + line.slice(p.length)
+        : value.slice(0, lineStart) + p + value.slice(lineStart);
+      onChange(next);
+      const delta = line.startsWith(p) ? -p.length : p.length;
+      setTimeout(() => {
+        el.focus();
+        el.setSelectionRange(pos + delta, pos + delta);
+      }, 0);
+    },
+    [value, onChange]
+  );
+
+  const tools = [
+    { label: "ב", title: "מודגש", action: () => wrap("**") },
+    { label: "H1", title: "כותרת גדולה", action: () => prefix("# ") },
+    { label: "H2", title: "כותרת בינונית", action: () => prefix("## ") },
+    { label: "H3", title: "כותרת קטנה", action: () => prefix("### ") },
+    { label: "•", title: "נקודת רשימה", action: () => prefix("- ") },
+  ];
+
+  return (
+    <div className="flex flex-col overflow-hidden rounded-lg border border-border focus-within:border-brand">
+      <div className="flex gap-1 border-b border-border bg-surface-2 p-1.5">
+        {tools.map((t) => (
+          <button
+            key={t.label}
+            type="button"
+            title={t.title}
+            onMouseDown={(e) => {
+              e.preventDefault(); // keep textarea focus
+              t.action();
+            }}
+            className="rounded px-2.5 py-1 text-sm font-bold text-ink hover:bg-surface"
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      <textarea
+        ref={ref}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={9}
+        placeholder={"# כותרת גדולה\n## כותרת בינונית\n- נקודת רשימה\n**מודגש**\nטקסט חופשי"}
+        className="w-full resize-none bg-surface p-3 text-sm outline-none"
+        dir="rtl"
+      />
+    </div>
   );
 }
 

@@ -51,7 +51,7 @@ export function PresenterSlide({
       )}
 
       {slide.type === "multiple_choice" && (
-        <div id="om-capture" className="w-full max-w-4xl rounded-card bg-surface p-2">
+        <div className="w-full max-w-4xl rounded-card bg-surface p-2">
           <BarChartResult
             options={(slide.content_json as MultipleChoiceContent).options}
             result={asKind<MultipleChoiceResult>(payload, "multiple_choice")}
@@ -60,7 +60,7 @@ export function PresenterSlide({
       )}
 
       {slide.type === "word_cloud" && (
-        <div id="om-capture" className="flex min-h-[40vh] w-full max-w-5xl items-center justify-center rounded-card bg-surface p-8">
+        <div className="flex min-h-[40vh] w-full max-w-5xl items-center justify-center rounded-card bg-surface p-8">
           <WordCloudResult result={asKind<WCResult>(payload, "word_cloud")} />
         </div>
       )}
@@ -117,12 +117,19 @@ function InstructionsView({
 function TextView({ content }: { content: TextContent }) {
   const lines = (content.markdown || "").split("\n");
   return (
-    <div className="max-w-3xl space-y-3 text-right text-2xl leading-relaxed text-ink">
+    <div className="max-w-3xl space-y-3 text-right leading-relaxed text-ink">
       {lines.map((line, i) => {
+        if (line.startsWith("# "))
+          return <h1 key={i} className="text-5xl font-black" dangerouslySetInnerHTML={{ __html: inlineBold(line.slice(2)) }} />;
+        if (line.startsWith("## "))
+          return <h2 key={i} className="text-4xl font-bold" dangerouslySetInnerHTML={{ __html: inlineBold(line.slice(3)) }} />;
+        if (line.startsWith("### "))
+          return <h3 key={i} className="text-3xl font-semibold" dangerouslySetInnerHTML={{ __html: inlineBold(line.slice(4)) }} />;
         const bullet = line.trimStart().startsWith("- ");
         const text = bullet ? line.trimStart().slice(2) : line;
+        if (!text.trim()) return <br key={i} />;
         return (
-          <p key={i} className={bullet ? "flex gap-2" : ""}>
+          <p key={i} className={`text-2xl${bullet ? " flex gap-2" : ""}`}>
             {bullet && <span className="text-brand">•</span>}
             <span dangerouslySetInnerHTML={{ __html: inlineBold(text) }} />
           </p>
