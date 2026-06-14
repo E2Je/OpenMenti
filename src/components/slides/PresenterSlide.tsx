@@ -145,7 +145,7 @@ function TextView({ content }: { content: TextContent }) {
 function OpenEndedView({ result }: { result: OpenEndedResult | null }) {
   const cards = result?.cards ?? [];
   return (
-    <div id="om-capture" className="w-full max-w-6xl">
+    <div className="w-full max-w-6xl">
       {cards.length === 0 ? (
         <p className="text-2xl text-ink-faint">ממתינים לתשובות...</p>
       ) : (
@@ -188,7 +188,7 @@ function RankingView({
   const maxW = Math.max(...Object.values(weights), 1);
 
   return (
-    <div id="om-capture" className="w-full max-w-3xl">
+    <div className="w-full max-w-3xl">
       <div className="flex flex-col gap-4">
         {sorted.map((item, rank) => {
           const w = weights[item.id];
@@ -231,7 +231,7 @@ function PinOnImageView({
   }
 
   return (
-    <div id="om-capture" className="relative w-full max-w-4xl">
+    <div className="relative w-full max-w-4xl">
       <div className="relative overflow-hidden rounded-card">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={content.imageUrl} alt="" className="w-full" />

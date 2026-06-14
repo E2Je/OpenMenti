@@ -76,17 +76,22 @@ export async function deletePresentation(id: string) {
 
 export async function addSlide(presentationId: string, type: SlideType) {
   const { supabase } = await requireUser();
-  const { count } = await supabase
+  const { data: maxRow } = await supabase
     .from("slides")
-    .select("id", { count: "exact", head: true })
-    .eq("presentation_id", presentationId);
+    .select("order_index")
+    .eq("presentation_id", presentationId)
+    .order("order_index", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const nextIndex = maxRow ? maxRow.order_index + 1 : 0;
 
   const { error } = await supabase.from("slides").insert({
     presentation_id: presentationId,
     type,
     title: type === "instructions" || type === "text" ? "" : "שאלה חדשה",
     content_json: defaultContent(type),
-    order_index: count ?? 0,
+    order_index: nextIndex,
   });
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/${presentationId}`);

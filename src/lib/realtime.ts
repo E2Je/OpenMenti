@@ -53,6 +53,7 @@ export async function sendVote(
     config: { broadcast: { ack: false } },
   });
   await channel.send({ type: "broadcast", event: VOTE_EVENT, payload: message });
+  void supabase.removeChannel(channel);
 }
 
 /** Presenter subscribes to receive every vote. Returns an unsubscribe fn. */
@@ -89,6 +90,7 @@ export async function sendControl(
     event: CONTROL_EVENT,
     payload: message,
   });
+  void supabase.removeChannel(channel);
 }
 
 /** Participant subscribes to slide-change events. Returns an unsubscribe fn. */
