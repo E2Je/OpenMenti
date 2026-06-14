@@ -113,6 +113,15 @@ export async function deleteSlide(slideId: string, presentationId: string) {
   revalidatePath(`/admin/${presentationId}`);
 }
 
+export async function reorderSlides(presentationId: string, slideIds: string[]) {
+  const { supabase } = await requireUser();
+  await Promise.all(
+    slideIds.map((id, index) =>
+      supabase.from("slides").update({ order_index: index }).eq("id", id)
+    )
+  );
+}
+
 /** Create (or reactivate) the live session and go to the presenter view. */
 export async function startSession(presentationId: string) {
   const { supabase } = await requireUser();
