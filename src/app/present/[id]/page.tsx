@@ -17,25 +17,12 @@ export default async function PresentPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: presentation } = await supabase
-    .from("presentations")
-    .select("*")
-    .eq("id", id)
-    .maybeSingle();
+  const [{ data: presentation }, { data: slides }, { data: session }] = await Promise.all([
+    supabase.from("presentations").select("*").eq("id", id).maybeSingle(),
+    supabase.from("slides").select("*").eq("presentation_id", id).order("order_index", { ascending: true }),
+    supabase.from("live_sessions").select("*").eq("presentation_id", id).eq("status", "active").maybeSingle(),
+  ]);
   if (!presentation) notFound();
-
-  const { data: slides } = await supabase
-    .from("slides")
-    .select("*")
-    .eq("presentation_id", id)
-    .order("order_index", { ascending: true });
-
-  const { data: session } = await supabase
-    .from("live_sessions")
-    .select("*")
-    .eq("presentation_id", id)
-    .eq("status", "active")
-    .maybeSingle();
 
   if (!session) {
     return (

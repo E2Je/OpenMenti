@@ -15,18 +15,11 @@ export default async function EditorPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: presentation } = await supabase
-    .from("presentations")
-    .select("*")
-    .eq("id", id)
-    .maybeSingle();
+  const [{ data: presentation }, { data: slides }] = await Promise.all([
+    supabase.from("presentations").select("*").eq("id", id).maybeSingle(),
+    supabase.from("slides").select("*").eq("presentation_id", id).order("order_index", { ascending: true }),
+  ]);
   if (!presentation) notFound();
-
-  const { data: slides } = await supabase
-    .from("slides")
-    .select("*")
-    .eq("presentation_id", id)
-    .order("order_index", { ascending: true });
 
   return (
     <SlideEditor
