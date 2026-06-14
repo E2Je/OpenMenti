@@ -22,10 +22,15 @@ export function LoginForm() {
     try {
       const supabase = createClient();
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        setNotice("נשלח אימייל אימות. אשרו אותו ואז התחברו.");
-        setMode("signin");
+        if (data.session) {
+          router.push("/admin");
+          router.refresh();
+        } else {
+          setNotice("נשלח אימייל אימות. אשרו אותו ואז התחברו.");
+          setMode("signin");
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
