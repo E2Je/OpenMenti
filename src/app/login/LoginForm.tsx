@@ -47,7 +47,7 @@ export function LoginForm() {
       <h1 className="text-2xl font-black text-ink">
         {mode === "signin" ? "התחברות" : "יצירת חשבון"}
       </h1>
-      <p className="mt-1 text-ink-soft">ל-OpenMenti · לוח הבקרה</p>
+      <p className="mt-1 text-ink-soft">ל-itameter · לוח הבקרה</p>
 
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">

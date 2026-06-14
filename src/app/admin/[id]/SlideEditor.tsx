@@ -7,9 +7,13 @@ import { cn } from "@/lib/utils";
 import { addSlide, deleteSlide, startSession, updateSlide } from "../actions";
 import type {
   MultipleChoiceContent,
+  OpenEndedContent,
+  PinOnImageContent,
   Presentation,
+  RankingContent,
   Slide,
   SlideType,
+  WordCloudContent,
 } from "@/lib/types";
 
 const TYPE_LABELS: Record<SlideType, string> = {
@@ -22,8 +26,10 @@ const TYPE_LABELS: Record<SlideType, string> = {
   pin_on_image: "סימון על תמונה",
 };
 
-// MVP-enabled types first; the rest are scaffolded but disabled in the picker.
-const MVP_TYPES: SlideType[] = ["instructions", "text", "multiple_choice", "word_cloud"];
+const ALL_TYPES: SlideType[] = [
+  "instructions", "text", "multiple_choice", "word_cloud",
+  "open_ended", "ranking", "pin_on_image",
+];
 
 export function SlideEditor({
   presentation,
@@ -98,7 +104,7 @@ export function SlideEditor({
             הוספת שקופית
           </p>
           <div className="grid grid-cols-2 gap-2">
-            {MVP_TYPES.map((t) => (
+            {ALL_TYPES.map((t) => (
               <button
                 key={t}
                 disabled={isPending}
@@ -188,10 +194,37 @@ function PreviewBody({ slide }: { slide: Slide }) {
       </div>
     );
   }
+  if (slide.type === "ranking") {
+    const c = slide.content_json as RankingContent;
+    return (
+      <div className="flex h-full flex-col gap-3">
+        <h2 className="text-xl font-bold text-ink">{c.question}</h2>
+        {c.items.map((it, i) => (
+          <div key={it.id} className="flex items-center gap-3 rounded-xl bg-surface-2 px-4 py-2">
+            <span className="font-black text-brand">{i + 1}</span>
+            <span className="font-semibold text-ink">{it.label}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (slide.type === "pin_on_image") {
+    const c = slide.content_json as PinOnImageContent;
+    return (
+      <div className="flex h-full flex-col gap-3">
+        <h2 className="text-xl font-bold text-ink">{c.question}</h2>
+        {c.imageUrl ? (
+          <img src={c.imageUrl} alt="" className="max-h-48 w-full rounded-xl object-contain" />
+        ) : (
+          <div className="flex flex-1 items-center justify-center rounded-xl bg-surface-2 text-ink-faint">הכניסו כתובת URL של תמונה</div>
+        )}
+      </div>
+    );
+  }
   const c = slide.content_json as { question: string };
   return (
     <div className="flex h-full items-center justify-center text-center">
-      <h2 className="text-2xl font-bold text-ink">{c.question}</h2>
+      <h2 className="text-2xl font-bold text-ink">{c.question || ""}</h2>
     </div>
   );
 }
@@ -252,7 +285,7 @@ function EditPanel({
         </Labeled>
       )}
 
-      {(slide.type === "multiple_choice" || slide.type === "word_cloud") && (
+      {(["multiple_choice", "word_cloud", "ranking"] as SlideType[]).includes(slide.type) && (
         <Labeled label="שאלה">
           <input
             className={field}
@@ -276,12 +309,57 @@ function EditPanel({
             min={1}
             max={10}
             className={field}
-            value={(slide.content_json as { maxEntriesPerUser: number }).maxEntriesPerUser}
+            value={(slide.content_json as WordCloudContent).maxEntriesPerUser}
             onChange={(e) =>
               setContent({ maxEntriesPerUser: Number(e.target.value) || 1 })
             }
           />
         </Labeled>
+      )}
+
+      {slide.type === "open_ended" && (
+        <Labeled label="שאלה">
+          <input
+            className={field}
+            value={(slide.content_json as OpenEndedContent).question}
+            onChange={(e) => setContent({ question: e.target.value })}
+          />
+        </Labeled>
+      )}
+
+      {slide.type === "ranking" && (
+        <RankingFields
+          content={slide.content_json as RankingContent}
+          setContent={setContent}
+        />
+      )}
+
+      {slide.type === "pin_on_image" && (
+        <>
+          <Labeled label="שאלה">
+            <input
+              className={field}
+              value={(slide.content_json as PinOnImageContent).question}
+              onChange={(e) => setContent({ question: e.target.value })}
+            />
+          </Labeled>
+          <Labeled label="כתובת URL של התמונה">
+            <input
+              className={field}
+              dir="ltr"
+              placeholder="https://..."
+              value={(slide.content_json as PinOnImageContent).imageUrl}
+              onChange={(e) => setContent({ imageUrl: e.target.value })}
+            />
+          </Labeled>
+          {(slide.content_json as PinOnImageContent).imageUrl && (
+            <img
+              src={(slide.content_json as PinOnImageContent).imageUrl}
+              alt=""
+              className="w-full rounded-lg object-contain"
+            />
+          )}
+        </>
       )}
 
       <Labeled label="כותרת השקופית (אופציונלי)">
@@ -354,6 +432,47 @@ function MultipleChoiceFields({
           />
           לאפשר בחירה מרובה
         </label>
+      </div>
+    </Labeled>
+  );
+}
+
+function RankingFields({
+  content,
+  setContent,
+}: {
+  content: RankingContent;
+  setContent: (c: Record<string, unknown>) => void;
+}) {
+  function setItem(id: string, label: string) {
+    setContent({ items: content.items.map((it) => (it.id === id ? { ...it, label } : it)) });
+  }
+  function addItem() {
+    if (content.items.length >= 6) return;
+    setContent({ items: [...content.items, { id: crypto.randomUUID(), label: `פריט ${content.items.length + 1}` }] });
+  }
+  function removeItem(id: string) {
+    if (content.items.length <= 2) return;
+    setContent({ items: content.items.filter((it) => it.id !== id) });
+  }
+  return (
+    <Labeled label="פריטים לדירוג">
+      <div className="flex flex-col gap-2">
+        {content.items.map((it) => (
+          <div key={it.id} className="flex gap-2">
+            <input
+              className="h-10 flex-1 rounded-lg border border-border bg-surface px-3 outline-none focus:border-brand"
+              value={it.label}
+              onChange={(e) => setItem(it.id, e.target.value)}
+            />
+            <button onClick={() => removeItem(it.id)} className="px-2 text-ink-faint hover:text-danger">×</button>
+          </div>
+        ))}
+        {content.items.length < 6 && (
+          <button onClick={addItem} className="rounded-lg border border-dashed border-border py-2 text-sm text-ink-soft hover:bg-surface-2">
+            + הוספת פריט
+          </button>
+        )}
       </div>
     </Labeled>
   );

@@ -10,7 +10,7 @@ export function Participant({ presentationId }: { presentationId: string }) {
   return (
     <main className="flex min-h-screen flex-col px-5 py-6">
       <div className="mb-4 flex items-center justify-between">
-        <span className="text-sm font-bold text-brand">OpenMenti</span>
+        <span className="text-sm font-bold text-brand">itameter</span>
         <StatusDot state={connState} />
       </div>
 

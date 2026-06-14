@@ -9,9 +9,9 @@ const heebo = Heebo({
 });
 
 export const metadata: Metadata = {
-  title: "OpenMenti - מצגות אינטראקטיביות בזמן אמת",
+  title: "itameter - מצגות אינטראקטיביות בזמן אמת",
   description:
-    "חלופה חופשית וקוד פתוח ל-Mentimeter. הצבעות, ענני מילים ושאלות פתוחות בזמן אמת.",
+    "הצבעות, ענני מילים ושאלות פתוחות בזמן אמת. עד 150 משתתפים מהנייד, בחינם.",
 };
 
 export const viewport: Viewport = {

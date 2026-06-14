@@ -7,7 +7,7 @@ export default function Home() {
       <div className="pointer-events-none absolute -top-40 start-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-brand/20 blur-3xl" />
       <div className="relative z-10 flex max-w-2xl flex-col items-center gap-8 text-center">
         <span className="rounded-pill border border-border bg-surface/70 px-4 py-1.5 text-sm font-semibold text-brand backdrop-blur">
-          OpenMenti · קוד פתוח · ללא עלות
+          itameter · ללא עלות · ללא הורדות
         </span>
         <h1 className="text-5xl font-black leading-tight text-ink md:text-6xl">
           מצגות אינטראקטיביות
@@ -15,8 +15,8 @@ export default function Home() {
           <span className="text-brand">בזמן אמת</span>
         </h1>
         <p className="max-w-xl text-xl leading-relaxed text-ink-soft">
-          הצבעות, ענני מילים ושאלות פתוחות. עד 150 משתתפים מהנייד, בלי הורדות
-          ובלי תשלום. חלופה עצמאית ל-Mentimeter.
+          הצבעות, ענני מילים, שאלות פתוחות ודירוג. עד 150 משתתפים מהנייד,
+          בלי הורדות ובחינם לחלוטין.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Link href="/admin">
